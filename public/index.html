@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Client</title>
+</head>
+<body>
+    <select id="chatType">
+        <option value="public">Public Chat</option>
+        <option value="private">Private Chat</option>
+    </select>
+    <br>
+    <input type="text" id="recipientInput" placeholder="Recipient (for private chat)">
+    <input type="text" id="messageInput" placeholder="Type a message">
+    <button onclick="sendMessage()">Send</button>
+
+    <script>
+        const ws = new WebSocket('ws://localhost:3002'); 
+        const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJ1c2VySWQiOjEwLCJpYXQiOjE3MTQ1NzA0MTksImV4cCI6MTcxNDU3NDAxOX0.O0ClkRrGseBwxg0J3J4MU4I-59Ji0KMgcjxcUyJQNR0';
+    
+        ws.addEventListener('open', () => {
+            console.log('Connected to WebSocket server');
+        });
+    
+        ws.addEventListener('message', (event) => {
+            console.log('Received message from server:', event.data);
+        });
+    
+        function sendMessage() {
+            const chatType = document.getElementById('chatType').value;
+            const recipient = document.getElementById('recipientInput').value;
+            const messageInput = document.getElementById('messageInput');
+            const message = messageInput.value;
+            let messageToSend = message;
+            if (chatType === 'private') {
+                if (!recipient) {
+                    console.error('Recipient is required for private chat');
+                    return;
+                }
+                messageToSend = `@${recipient} ${message}`;
+            }
+            const messageWithToken = JSON.stringify({ token: token, message: messageToSend });
+            console.log('Sent message to server:', messageToSend);
+            ws.send(messageWithToken);
+            messageInput.value = ''; 
+        }
+    </script>
+</body>
+</html>
